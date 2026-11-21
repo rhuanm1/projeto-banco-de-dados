@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict SarBouT6XCL1EHezJNpx3ltPcOKo8M0CU7xUf6vziRaIRlj9kmTkZ8wPu4v4HRy
+\restrict 0tOBSMEU2s8g7wgRYycnjfCMIl3mEKsd7BWGJBD7NRF5iAzlf8c4iSsejDoG29x
 
 -- Dumped from database version 18.7 (84da7d8)
 -- Dumped by pg_dump version 18.7 (Debian 18.7-1.pgdg13+5)
@@ -108,5 +108,5 @@ ALTER TABLE ONLY public.pagamento
 -- PostgreSQL database dump complete
 --
 
-\unrestrict SarBouT6XCL1EHezJNpx3ltPcOKo8M0CU7xUf6vziRaIRlj9kmTkZ8wPu4v4HRy
+\unrestrict 0tOBSMEU2s8g7wgRYycnjfCMIl3mEKsd7BWGJBD7NRF5iAzlf8c4iSsejDoG29x
 

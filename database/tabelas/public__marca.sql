@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict ExCkCgTSCX3H62IPaf8ObsnUzcRigFLTfRbK5PQMVdqEPvUOJyeS5gRcoNv5o5e
+\restrict hY6mzmdeNpkSBD9MCTOS510H4VM8eQCSnS0naYZirXXg0xAZYQjmhjT5tbkBJVH
 
 -- Dumped from database version 18.7 (84da7d8)
 -- Dumped by pg_dump version 18.7 (Debian 18.7-1.pgdg13+5)
@@ -114,5 +114,5 @@ ALTER TABLE ONLY public.marca
 -- PostgreSQL database dump complete
 --
 
-\unrestrict ExCkCgTSCX3H62IPaf8ObsnUzcRigFLTfRbK5PQMVdqEPvUOJyeS5gRcoNv5o5e
+\unrestrict hY6mzmdeNpkSBD9MCTOS510H4VM8eQCSnS0naYZirXXg0xAZYQjmhjT5tbkBJVH
 

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict OH1TZtiZdgGzv9RGpgbWtnbEFshee64dCKMKqEe1YayIruWD4NzgPergoSvH6Eh
+\restrict hjgT9Vjicc0obFAl1eP51zD778CII06UkhLlp11eywxFWebYEqAfiTYA0c2R6Ui
 
 -- Dumped from database version 18.7 (84da7d8)
 -- Dumped by pg_dump version 18.7 (Debian 18.7-1.pgdg13+5)
@@ -97,5 +97,5 @@ ALTER TABLE ONLY public.cliente
 -- PostgreSQL database dump complete
 --
 
-\unrestrict OH1TZtiZdgGzv9RGpgbWtnbEFshee64dCKMKqEe1YayIruWD4NzgPergoSvH6Eh
+\unrestrict hjgT9Vjicc0obFAl1eP51zD778CII06UkhLlp11eywxFWebYEqAfiTYA0c2R6Ui
 

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict SRYuAsBi0WsaAxrIkI6rTrtrSPUYNyXbF4M6GPe47qI5ZkIdTLfq9zeQeNN5vaE
+\restrict GmVyaq7zVurn3CBe0hSMHJGZYh2OuLceegAiLTbtXTJMFrzmupCaohCU6k3Uszy
 
 -- Dumped from database version 18.7 (84da7d8)
 -- Dumped by pg_dump version 18.7 (Debian 18.7-1.pgdg13+5)
@@ -101,5 +101,5 @@ ALTER TABLE ONLY public.endereco
 -- PostgreSQL database dump complete
 --
 
-\unrestrict SRYuAsBi0WsaAxrIkI6rTrtrSPUYNyXbF4M6GPe47qI5ZkIdTLfq9zeQeNN5vaE
+\unrestrict GmVyaq7zVurn3CBe0hSMHJGZYh2OuLceegAiLTbtXTJMFrzmupCaohCU6k3Uszy
 

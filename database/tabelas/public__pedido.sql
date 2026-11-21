@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict GnWUWlVqFgX7v9HUfThvoNJVNOYxStZlxXhraBQYWhedAg9m5NYGVG0NErrH03N
+\restrict pcGyIMfKgZEdNnQmcvxcNg4APNSWmdQaqGO8ksTOeTcyNLEFj8P0PkOu3w0fV0H
 
 -- Dumped from database version 18.7 (84da7d8)
 -- Dumped by pg_dump version 18.7 (Debian 18.7-1.pgdg13+5)
@@ -106,5 +106,5 @@ ALTER TABLE ONLY public.pedido
 -- PostgreSQL database dump complete
 --
 
-\unrestrict GnWUWlVqFgX7v9HUfThvoNJVNOYxStZlxXhraBQYWhedAg9m5NYGVG0NErrH03N
+\unrestrict pcGyIMfKgZEdNnQmcvxcNg4APNSWmdQaqGO8ksTOeTcyNLEFj8P0PkOu3w0fV0H
 

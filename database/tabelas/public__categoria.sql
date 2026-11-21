@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict kpiN2n0cIwK7J2GADpc3RICUKrzexRYthMfeyTT2gnjofrj7BMJ3S1yCvn6sgx1
+\restrict cRu2FlSxGeIzFfkKWecW7XG1xx1HcC0DMtzc8WWey4baspMMrMokKfhdhQOvq6h
 
 -- Dumped from database version 18.7 (84da7d8)
 -- Dumped by pg_dump version 18.7 (Debian 18.7-1.pgdg13+5)
@@ -98,5 +98,5 @@ ALTER TABLE ONLY public.categoria
 -- PostgreSQL database dump complete
 --
 
-\unrestrict kpiN2n0cIwK7J2GADpc3RICUKrzexRYthMfeyTT2gnjofrj7BMJ3S1yCvn6sgx1
+\unrestrict cRu2FlSxGeIzFfkKWecW7XG1xx1HcC0DMtzc8WWey4baspMMrMokKfhdhQOvq6h
 

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 86jcyXbeA55ZObt2BGeXIPsVRVG0aKbErOsLdkNpnRuBBbnoVY7orgCBQli7eMc
+\restrict PSgL0waojI4BPv8cok6Sb8ur9epoPQbWHUHPqS2x9SmVlBlLXQrzmsMKBYC4aev
 
 -- Dumped from database version 18.7 (84da7d8)
 -- Dumped by pg_dump version 18.7 (Debian 18.7-1.pgdg13+5)
@@ -146,5 +146,5 @@ ALTER TABLE ONLY public.produto
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 86jcyXbeA55ZObt2BGeXIPsVRVG0aKbErOsLdkNpnRuBBbnoVY7orgCBQli7eMc
+\unrestrict PSgL0waojI4BPv8cok6Sb8ur9epoPQbWHUHPqS2x9SmVlBlLXQrzmsMKBYC4aev
 
