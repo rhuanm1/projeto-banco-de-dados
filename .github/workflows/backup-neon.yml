@@ -1,0 +1,43 @@
+
+name: Backup automatico do Neon
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar arquivos do repositorio
+        uses: actions/checkout@v4
+
+      - name: Exportar banco de dados do Neon
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -e NEON_DATABASE_URL \
+            postgres:18 \
+            pg_dump --no-owner --no-privileges \
+            --format=plain \
+            --file=/work/database/database_completa.sql \
+            "$NEON_DATABASE_URL"
+
+      - name: Atualizar GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add database/database_completa.sql
+          if ! git diff --cached --quiet; then
+            git commit -m "Atualizacao automatica do banco Neon"
+            git push
+          else
+            echo "Nenhuma alteracao encontrada."
+          fi
