@@ -1,86 +1,519 @@
+# Sistema de Gerenciamento de Vendas
 
-name: Backup automatico do Neon
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
+![Neon](https://img.shields.io/badge/Database-Neon-00E599?logo=neon&logoColor=black)
+![SQL](https://img.shields.io/badge/Language-SQL-blue)
+![GitHub](https://img.shields.io/badge/Version_Control-GitHub-181717?logo=github)
+![GitHub Actions](https://img.shields.io/badge/Automation-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
 
-on:
-  schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
+## 1. Sobre o projeto
 
-permissions:
-  contents: write
+O **Sistema de Gerenciamento de Vendas** é um projeto de banco de dados relacional desenvolvido utilizando PostgreSQL, com o objetivo de organizar e gerenciar informações relacionadas às operações de um sistema comercial.
 
-jobs:
-  backup:
-    runs-on: ubuntu-latest
+O banco de dados foi estruturado para armazenar e relacionar informações de clientes, endereços, produtos, categorias, marcas, pedidos, itens de pedidos e pagamentos.
 
-    steps:
-      - name: Baixar arquivos do repositorio
-        uses: actions/checkout@v4
+O projeto aplica conceitos fundamentais de bancos de dados relacionais, incluindo modelagem de dados, integridade referencial, chaves primárias, chaves estrangeiras, restrições de integridade e automatização de backups.
 
-      - name: Exportar banco completo
-        env:
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-        run: |
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE:/work" \
-            -e NEON_DATABASE_URL \
-            postgres:18 \
-            pg_dump --no-owner --no-privileges \
-            --format=plain \
-            --file=/work/database/database_completa.sql \
-            "$NEON_DATABASE_URL"
+Os dados utilizados no ambiente de demonstração são fictícios.
 
-      - name: Exportar cada tabela separadamente
-        env:
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
-        run: |
-          mkdir -p database/tabelas
+## 2. Objetivos do projeto
 
-          docker run --rm \
-            -v "$GITHUB_WORKSPACE:/work" \
-            -e NEON_DATABASE_URL \
-            postgres:18 bash -c '
-              set -e
+- Desenvolver uma estrutura de banco de dados relacional.
+- Organizar informações de clientes e seus endereços.
+- Gerenciar produtos, categorias e marcas.
+- Registrar pedidos e seus respectivos itens.
+- Armazenar informações de pagamentos.
+- Garantir a integridade e consistência dos dados.
+- Aplicar relacionamentos entre tabelas.
+- Hospedar o banco de dados na nuvem.
+- Automatizar a exportação e o versionamento dos arquivos SQL.
+- Facilitar a recuperação e reprodução do banco de dados.
 
-              find /work/database/tabelas -type f -name "*.sql" -delete
+## 3. Tecnologias utilizadas
 
-              psql "$NEON_DATABASE_URL" -At -F "|" -c "
-                SELECT schemaname, tablename
-                FROM pg_tables
-                WHERE schemaname NOT IN (
-                  '\''pg_catalog'\'',
-                  '\''information_schema'\''
-                )
-                AND schemaname NOT LIKE '\''pg_%'\''
-                ORDER BY schemaname, tablename;
-              " | while IFS="|" read -r schema table; do
+| Tecnologia | Finalidade |
+|---|---|
+| PostgreSQL 18 | Sistema gerenciador do banco de dados |
+| Neon | Hospedagem PostgreSQL na nuvem |
+| SQL | Linguagem de definição e manipulação de dados |
+| GitHub | Versionamento e armazenamento do projeto |
+| GitHub Actions | Automação de backups |
+| pg_dump | Exportação do banco de dados |
+| psql | Consulta e execução de comandos SQL |
 
-                safe_name=$(printf "%s__%s" "$schema" "$table" | sed "s/[^A-Za-z0-9_.-]/_/g")
+## 4. Arquitetura do projeto
 
-                table_pattern="\"$schema\".\"$table\""
+O projeto utiliza uma arquitetura baseada em banco de dados relacional hospedado na nuvem.
 
-                echo "Exportando tabela: $table"
+### Funcionamento
 
-                pg_dump "$NEON_DATABASE_URL" \
-                  --no-owner \
-                  --no-privileges \
-                  --format=plain \
-                  --table="$table_pattern" \
-                  --file="/work/database/tabelas/${safe_name}.sql"
+1. O PostgreSQL gerencia as tabelas, relacionamentos e restrições.
+2. O Neon disponibiliza o banco de dados na nuvem.
+3. O GitHub armazena os arquivos SQL e a documentação.
+4. O GitHub Actions executa automaticamente o processo de backup.
+5. O `pg_dump` realiza a exportação completa do banco e das tabelas individuais.
+6. Os arquivos gerados são enviados ao repositório GitHub.
 
-              done
-            '
+## 5. Estrutura do banco de dados
 
-      - name: Atualizar GitHub
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+O banco de dados possui **8 tabelas principais**, organizadas para representar as operações de um sistema de gerenciamento de vendas.
 
-          git add -A database
+| Tabela | Descrição |
+|---|---|
+| `categoria` | Armazena as categorias dos produtos. |
+| `cliente` | Armazena os dados cadastrais dos clientes. |
+| `endereco` | Armazena os endereços dos clientes. |
+| `marca` | Armazena as marcas dos produtos. |
+| `produto` | Armazena os produtos disponíveis. |
+| `pedido` | Registra os pedidos realizados. |
+| `item_pedido` | Relaciona os produtos aos pedidos. |
+| `pagamento` | Armazena as informações de pagamento. |
 
-          if ! git diff --cached --quiet; then
-            git commit -m "Atualizacao automatica do banco Neon"
-            git push
-          else
-            echo "Nenhuma alteracao encontrada."
-          fi
+## 6. Diagrama entidade-relacionamento (DER)
+
+O diagrama representa as entidades e os relacionamentos existentes no banco de dados.
+
+```mermaid
+erDiagram
+    CLIENTE ||--o{ ENDERECO : possui
+    CLIENTE ||--o{ PEDIDO : realiza
+    ENDERECO ||--o{ PEDIDO : utilizado_em
+    CATEGORIA ||--o{ PRODUTO : classifica
+    MARCA o|--o{ PRODUTO : identifica
+    PEDIDO ||--o{ ITEM_PEDIDO : contem
+    PRODUTO ||--o{ ITEM_PEDIDO : participa
+    PEDIDO ||--o| PAGAMENTO : possui
+
+    CLIENTE {
+        integer id_cliente PK
+        varchar nome
+        varchar email UK
+        varchar telefone
+    }
+
+    ENDERECO {
+        integer id_endereco PK
+        integer id_cliente FK
+        varchar rua
+        varchar numero
+        varchar bairro
+        varchar cidade
+        varchar estado
+        varchar cep
+    }
+
+    CATEGORIA {
+        integer id_categoria PK
+        varchar nome UK
+    }
+
+    MARCA {
+        integer id_marca PK
+        varchar nome UK
+    }
+
+    PRODUTO {
+        integer id_prod PK
+        varchar nome
+        numeric preco
+        varchar subcategoria
+        integer estoque
+        integer id_categoria FK
+        integer id_marca FK
+    }
+
+    PEDIDO {
+        integer id_pedido PK
+        integer id_cliente FK
+        integer id_endereco FK
+        timestamp data_pedido
+        varchar status
+    }
+
+    ITEM_PEDIDO {
+        integer id_item PK
+        integer id_pedido FK
+        integer id_prod FK
+        integer quantidade
+        numeric preco_unitario
+    }
+
+    PAGAMENTO {
+        integer id_pagamento PK
+        integer id_pedido FK
+        varchar metodo
+        numeric valor
+        varchar status
+        timestamp data_pagamento
+    }
+```
+
+### Legenda
+
+- **PK:** Primary Key — chave primária.
+- **FK:** Foreign Key — chave estrangeira.
+- **UK:** Unique Key — restrição de unicidade.
+- **1:N:** relacionamento de um para muitos.
+- **0..1:** relacionamento opcional de até um registro.
+
+## 7. Dicionário de dados
+
+Esta seção apresenta os campos, tipos de dados e restrições de cada tabela.
+
+### 7.1. Tabela `categoria`
+
+Armazena as categorias utilizadas para classificar os produtos.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_categoria` | INTEGER | PK, NOT NULL |
+| `nome` | VARCHAR(40) | NOT NULL, UNIQUE |
+
+**Regras:** cada categoria possui um identificador exclusivo e um nome que não pode se repetir.
+
+### 7.2. Tabela `cliente`
+
+Armazena os dados cadastrais dos clientes.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_cliente` | INTEGER | PK, NOT NULL |
+| `nome` | VARCHAR(100) | NOT NULL |
+| `email` | VARCHAR(100) | NOT NULL, UNIQUE |
+| `telefone` | VARCHAR(20) | NULL |
+
+**Regras:** cada cliente possui um identificador exclusivo e um e-mail único. O telefone é opcional.
+
+### 7.3. Tabela `endereco`
+
+Armazena os endereços associados aos clientes.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_endereco` | INTEGER | PK, NOT NULL |
+| `id_cliente` | INTEGER | FK, NOT NULL |
+| `rua` | VARCHAR(100) | NOT NULL |
+| `numero` | VARCHAR(100) | NOT NULL |
+| `bairro` | VARCHAR(60) | NOT NULL |
+| `cidade` | VARCHAR(60) | NOT NULL |
+| `estado` | VARCHAR(2) | NOT NULL |
+| `cep` | VARCHAR(10) | NOT NULL |
+
+**Chave estrangeira:** `id_cliente` referencia `cliente(id_cliente)`.
+
+Um cliente pode possuir vários endereços, enquanto cada endereço está associado a um cliente.
+
+### 7.4. Tabela `marca`
+
+Armazena as marcas dos produtos cadastrados.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_marca` | INTEGER | PK, NOT NULL |
+| `nome` | VARCHAR(70) | NOT NULL, UNIQUE |
+
+**Regras:** cada marca possui um identificador exclusivo e um nome único.
+
+### 7.5. Tabela `produto`
+
+Armazena os produtos disponíveis no sistema.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_prod` | INTEGER | PK, NOT NULL |
+| `nome` | VARCHAR(70) | NOT NULL |
+| `preco` | NUMERIC(7,2) | NOT NULL |
+| `subcategoria` | VARCHAR(50) | NOT NULL |
+| `estoque` | INTEGER | NOT NULL |
+| `id_categoria` | INTEGER | FK, NOT NULL |
+| `id_marca` | INTEGER | FK, NULL |
+
+**Chaves estrangeiras:**
+
+- `id_categoria` referencia `categoria(id_categoria)`.
+- `id_marca` referencia `marca(id_marca)`.
+
+**Regras de integridade:**
+
+- O preço deve ser maior que zero.
+- O estoque não pode ser negativo.
+- A categoria é obrigatória.
+- A marca é opcional.
+
+### 7.6. Tabela `pedido`
+
+Registra os pedidos realizados pelos clientes.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_pedido` | INTEGER | PK, NOT NULL |
+| `id_cliente` | INTEGER | FK, NOT NULL |
+| `id_endereco` | INTEGER | FK, NOT NULL |
+| `data_pedido` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
+| `status` | VARCHAR(30) | DEFAULT 'pendente' |
+
+**Chaves estrangeiras:**
+
+- `id_cliente` referencia `cliente(id_cliente)`.
+- `id_endereco` referencia `endereco(id_endereco)`.
+
+**Regras:** todo pedido deve estar associado a um cliente e a um endereço cadastrado. A data e o status possuem valores padrão.
+
+### 7.7. Tabela `item_pedido`
+
+Relaciona os produtos aos pedidos, armazenando quantidades e preços unitários.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_item` | INTEGER | PK, NOT NULL |
+| `id_pedido` | INTEGER | FK, NOT NULL |
+| `id_prod` | INTEGER | FK, NOT NULL |
+| `quantidade` | INTEGER | NOT NULL |
+| `preco_unitario` | NUMERIC(10,2) | NOT NULL |
+
+**Chaves estrangeiras:**
+
+- `id_pedido` referencia `pedido(id_pedido)`.
+- `id_prod` referencia `produto(id_prod)`.
+
+**Regras de integridade:**
+
+- A quantidade deve ser maior que zero.
+- O preço unitário deve ser maior que zero.
+- A combinação de pedido e produto deve ser única.
+
+### 7.8. Tabela `pagamento`
+
+Armazena as informações dos pagamentos associados aos pedidos.
+
+| Campo | Tipo | Restrições |
+|---|---|---|
+| `id_pagamento` | INTEGER | PK, NOT NULL |
+| `id_pedido` | INTEGER | FK, NOT NULL, UNIQUE |
+| `metodo` | VARCHAR(40) | NOT NULL |
+| `valor` | NUMERIC(10,2) | NOT NULL |
+| `status` | VARCHAR(30) | DEFAULT 'pendente' |
+| `data_pagamento` | TIMESTAMP | NULL |
+
+**Chave estrangeira:** `id_pedido` referencia `pedido(id_pedido)`.
+
+**Regras de integridade:**
+
+- O valor do pagamento deve ser maior que zero.
+- Cada pedido pode possuir no máximo um pagamento.
+- O status assume `pendente` quando não informado.
+- A data do pagamento é opcional.
+
+## 8. Relacionamentos e cardinalidades
+
+| Relacionamento | Cardinalidade | Descrição |
+|---|---|---|
+| Cliente → Endereço | 1:N | Um cliente pode possuir vários endereços. |
+| Cliente → Pedido | 1:N | Um cliente pode realizar vários pedidos. |
+| Endereço → Pedido | 1:N | Um endereço pode ser utilizado em vários pedidos. |
+| Categoria → Produto | 1:N | Uma categoria pode classificar vários produtos. |
+| Marca → Produto | 1:N | Uma marca pode identificar vários produtos. |
+| Pedido → Item de pedido | 1:N | Um pedido pode possuir vários itens. |
+| Produto → Item de pedido | 1:N | Um produto pode aparecer em vários pedidos. |
+| Pedido → Pagamento | 1:0..1 | Um pedido pode possuir no máximo um pagamento. |
+
+**Observação:** as cardinalidades representam as regras estabelecidas pelas chaves estrangeiras e restrições do banco. Algumas regras de negócio, como exigir pelo menos um item em cada pedido, precisam ser implementadas na aplicação ou por regras adicionais no banco.
+
+## 9. Integridade e restrições
+
+O banco utiliza diferentes mecanismos para garantir a consistência das informações.
+
+### PRIMARY KEY
+
+Identifica exclusivamente cada registro de uma tabela.
+
+### FOREIGN KEY
+
+Estabelece relacionamentos entre tabelas e impede referências a registros inexistentes.
+
+### UNIQUE
+
+Impede a duplicidade de valores ou combinações de valores.
+
+Restrições utilizadas:
+
+- `categoria.nome`
+- `cliente.email`
+- `marca.nome`
+- `item_pedido(id_pedido, id_prod)`
+- `pagamento.id_pedido`
+
+### NOT NULL
+
+Determina que um campo deve obrigatoriamente receber um valor.
+
+### CHECK
+
+Valida condições específicas dos valores:
+
+| Restrição | Regra |
+|---|---|
+| `produto_preco_check` | Preço maior que zero |
+| `produto_estoque_check` | Estoque igual ou maior que zero |
+| `item_pedido_quantidade_check` | Quantidade maior que zero |
+| `item_pedido_preco_unitario_check` | Preço unitário maior que zero |
+| `pagamento_valor_check` | Valor maior que zero |
+
+### DEFAULT
+
+Define valores automaticamente quando não são informados.
+
+Exemplos:
+
+- `pedido.data_pedido`: data e hora atuais.
+- `pedido.status`: `pendente`.
+- `pagamento.status`: `pendente`.
+
+### SEQUENCES
+
+O PostgreSQL utiliza sequências para gerar automaticamente os identificadores das tabelas.
+
+## 10. Backups e automação
+
+O projeto utiliza **GitHub Actions** para automatizar a exportação do banco de dados hospedado no Neon.
+
+O workflow está configurado para executar:
+
+- Automaticamente a cada hora.
+- Manualmente pela aba Actions do GitHub.
+
+### 10.1. Backup completo
+
+A exportação completa utiliza `pg_dump` para gerar:
+
+`database/database_completa.sql`
+
+Esse arquivo contém a estrutura do banco e os registros existentes no momento da exportação.
+
+### 10.2. Backup individual das tabelas
+
+O workflow também identifica as tabelas existentes no banco e gera arquivos SQL individuais dentro de:
+
+`database/tabelas/`
+
+Os arquivos seguem o padrão:
+
+- `public__categoria.sql`
+- `public__cliente.sql`
+- `public__endereco.sql`
+- `public__item_pedido.sql`
+- `public__marca.sql`
+- `public__pagamento.sql`
+- `public__pedido.sql`
+- `public__produto.sql`
+
+Cada arquivo contém a exportação da respectiva tabela, incluindo sua estrutura e seus registros.
+
+### 10.3. Atualização automática no GitHub
+
+Após gerar os arquivos SQL, o GitHub Actions verifica se houve alterações.
+
+Quando existem alterações, o workflow realiza um commit e envia os arquivos atualizados ao repositório.
+
+### 10.4. Segurança dos backups
+
+A conexão com o Neon é configurada por meio do Secret:
+
+`NEON_DATABASE_URL`
+
+O valor da conexão não deve ser inserido diretamente nos arquivos do repositório.
+
+Os dados de demonstração devem ser fictícios e não devem conter informações pessoais reais.
+
+## 11. Como restaurar o banco de dados
+
+O backup completo permite recriar a estrutura e os registros de demonstração em outro banco PostgreSQL.
+
+### Pré-requisitos
+
+- PostgreSQL instalado ou acesso a uma instância PostgreSQL.
+- Ferramenta `psql` ou pgAdmin.
+- Banco de dados de destino vazio.
+
+### Método 1 — Utilizando o terminal
+
+Com o PostgreSQL instalado, execute:
+
+```bash
+psql -h HOST -U USUARIO -d NOME_DO_BANCO -f database/database_completa.sql
+```
+
+Substitua:
+
+- `HOST`: endereço do servidor PostgreSQL.
+- `USUARIO`: usuário do banco.
+- `NOME_DO_BANCO`: nome do banco de destino.
+
+### Método 2 — Utilizando o pgAdmin
+
+1. Abra o pgAdmin.
+2. Conecte-se ao servidor PostgreSQL.
+3. Crie um banco de dados vazio.
+4. Abra o Query Tool.
+5. Abra o arquivo `database/database_completa.sql`.
+6. Execute os comandos SQL.
+
+**Importante:** a restauração deve ser realizada em um banco vazio ou preparado para receber os objetos exportados, evitando conflitos com tabelas e dados existentes.
+
+## 12. Organização do repositório
+
+A estrutura dos arquivos é organizada da seguinte forma:
+
+```text
+projeto-banco-de-dados/
+│
+├── .github/
+│   └── workflows/
+│       └── backup-neon.yml
+│
+├── database/
+│   ├── README.md
+│   ├── database_completa.sql
+│   │
+│   └── tabelas/
+│       ├── public__categoria.sql
+│       ├── public__cliente.sql
+│       ├── public__endereco.sql
+│       ├── public__item_pedido.sql
+│       ├── public__marca.sql
+│       ├── public__pagamento.sql
+│       ├── public__pedido.sql
+│       └── public__produto.sql
+│
+└── README.md
+```
+
+Os arquivos SQL são atualizados conforme a execução da automação.
+
+## 13. Possibilidades de expansão
+
+A estrutura atual pode servir como base para futuras funcionalidades:
+
+- Integração com aplicações web.
+- Cadastro e gerenciamento de clientes.
+- Gerenciamento de produtos e estoque.
+- Criação e acompanhamento de pedidos.
+- Histórico de compras.
+- Relatórios de faturamento.
+- Gerenciamento de pagamentos.
+- Painel administrativo.
+- Integração com outros sistemas.
+
+## 14. Considerações finais
+
+O projeto demonstra a aplicação prática dos conceitos de bancos de dados relacionais por meio da construção de uma estrutura organizada, com relacionamentos definidos e regras de integridade.
+
+A utilização do PostgreSQL permite gerenciar as informações com consistência, enquanto o Neon oferece hospedagem em nuvem e o GitHub possibilita o versionamento, a documentação e a automação dos backups.
+
+O resultado é uma base de dados estruturada para gerenciamento de vendas, com possibilidade de expansão e integração com aplicações externas.
+
+---
+
+**Projeto acadêmico — Banco de Dados**
+
+Tecnologias: PostgreSQL 18, Neon, SQL, GitHub e GitHub Actions.
