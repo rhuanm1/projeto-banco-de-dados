@@ -17,7 +17,7 @@ jobs:
       - name: Baixar arquivos do repositorio
         uses: actions/checkout@v4
 
-      - name: Exportar banco de dados do Neon
+      - name: Exportar banco completo
         env:
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
         run: |
@@ -30,11 +30,54 @@ jobs:
             --file=/work/database/database_completa.sql \
             "$NEON_DATABASE_URL"
 
+      - name: Exportar cada tabela separadamente
+        env:
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          mkdir -p database/tabelas
+
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -e NEON_DATABASE_URL \
+            postgres:18 bash -c '
+              set -e
+
+              find /work/database/tabelas -type f -name "*.sql" -delete
+
+              psql "$NEON_DATABASE_URL" -At -F "|" -c "
+                SELECT schemaname, tablename
+                FROM pg_tables
+                WHERE schemaname NOT IN (
+                  '\''pg_catalog'\'',
+                  '\''information_schema'\''
+                )
+                AND schemaname NOT LIKE '\''pg_%'\''
+                ORDER BY schemaname, tablename;
+              " | while IFS="|" read -r schema table; do
+
+                safe_name=$(printf "%s__%s" "$schema" "$table" | sed "s/[^A-Za-z0-9_.-]/_/g")
+
+                table_pattern="\"$schema\".\"$table\""
+
+                echo "Exportando tabela: $table"
+
+                pg_dump "$NEON_DATABASE_URL" \
+                  --no-owner \
+                  --no-privileges \
+                  --format=plain \
+                  --table="$table_pattern" \
+                  --file="/work/database/tabelas/${safe_name}.sql"
+
+              done
+            '
+
       - name: Atualizar GitHub
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add database/database_completa.sql
+
+          git add -A database
+
           if ! git diff --cached --quiet; then
             git commit -m "Atualizacao automatica do banco Neon"
             git push
